@@ -1,0 +1,78 @@
+name: Java CI Pipeline
+
+# Trigger CI on push to main/develop or PR
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+jobs:
+  build-test:
+    name: Build and Test Java App
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. Set up Java
+      - name: Set up Java 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # 3. Cache Maven dependencies
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      # 4. Build project
+      - name: Build with Maven
+        run: mvn clean install -B
+
+      # 5. Run unit tests
+      - name: Run tests
+        run: mvn test
+
+      # 6. Package JAR
+      - name: Package JAR
+        run: mvn package
+
+  docker-build:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    needs: build-test
+
+    steps:
+      # 1. Checkout code again
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. Log in to Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # 3. Build Docker image
+      - name: Build Docker image
+        run: |
+          docker build -t my-dockerhub-username/my-java-app:${{ github.sha }} .
+
+      # 4. Push Docker image
+      - name: Push Docker image
+        run: |
+          docker push my-dockerhub-username/my-java-app:${{ github.sha }}
