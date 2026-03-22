@@ -54,7 +54,7 @@ jobs:
 
       - name: Update GitOps repo
         run: |
-          git clone https://$GITOPS_TOKEN@github.com/<username>/spring-petclinic-gitops.git
+          git clone https://$GITOPS_TOKEN@github.com/cloudexpertsltd/spring-petclinic-gitops.git
           cd spring-petclinic-gitops
 
           # Update deployment image
