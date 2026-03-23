@@ -43,7 +43,7 @@ jobs:
           docker push cloudexperts/spring-petclinic:${{ github.sha }}
           docker push cloudexperts/spring-petclinic:latest
 
-      - name: Update GitOps Repo
+      - name: Update GitOps repo
         run: |
           git clone https://$GITOPS_TOKEN@github.com/cloudexpertsltd/spring-petclinic-gitops.git
           cd spring-petclinic-gitops
